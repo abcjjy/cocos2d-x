@@ -79,6 +79,7 @@ public:
 private:
     UIFont*         constructFont(const char* fontName, int fontSize);
     
+protected:
     UIEditBoxImplIOS_objc* _systemControl;
 };
 

@@ -451,14 +451,14 @@ public:
     /**
      * Set default resource root path.
      */
-    void setDefaultResourceRootPath(const std::string& path);
+    virtual void setDefaultResourceRootPath(const std::string& path);
 
     /**
       * Add search path.
       *
       * @since v2.1
       */
-    void addSearchPath(const std::string & path, const bool front=false);
+    virtual void addSearchPath(const std::string & path, const bool front=false);
 
     /**
      *  Gets the array of search paths.
@@ -841,7 +841,7 @@ public:
     virtual void listFilesRecursivelyAsync(const std::string& dirPath, std::function<void(std::vector<std::string>)> callback) const;
 
     /** Returns the full path cache. */
-    const std::unordered_map<std::string, std::string>& getFullPathCache() const { return _fullPathCache; }
+    virtual const std::unordered_map<std::string, std::string>& getFullPathCache() const { return _fullPathCache; }
 
     /**
      *  Gets the new filename from the filename lookup dictionary.
