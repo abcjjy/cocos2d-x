@@ -1,5 +1,6 @@
-<img src="http://www.cocos2d-x.org/attachments/801/cocos2dx_portrait.png" width=200>
+此fork可以把cocos2d-x编译为ios静态库，并添加了bitcode支持。为了支持bitcode请使用https://github.com/abcjjy/cocos2d-x-3rd-party-libs-src.git 重新生成三方库。
 
+<img src="http://www.cocos2d-x.org/attachments/801/cocos2dx_portrait.png" width=200>i
 
 cocos2d-x
 =========
