@@ -26,4 +26,6 @@ fi
 mkdir -p bin-ios/lib-$mode
 lipo -create build/build/$mode-*/libcocos2d\ iOS.a -output bin-ios/lib-$mode/libcocos2diOS.a
 
+rsync -acv --files-from=ioshd . bin-ios/
+
 say -v alex "cocos2d-x build finish"

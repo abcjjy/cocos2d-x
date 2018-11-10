@@ -3538,6 +3538,12 @@
 		5E9F612B1A3FFE3D0038DE01 /* CCPlane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F61241A3FFE3D0038DE01 /* CCPlane.cpp */; };
 		5E9F612C1A3FFE3D0038DE01 /* CCPlane.h in Headers */ = {isa = PBXBuildFile; fileRef = 5E9F61251A3FFE3D0038DE01 /* CCPlane.h */; };
 		5E9F612D1A3FFE3D0038DE01 /* CCPlane.h in Headers */ = {isa = PBXBuildFile; fileRef = 5E9F61251A3FFE3D0038DE01 /* CCPlane.h */; };
+		644FAC732196DAF40065B26E /* xxtea.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644FAC712196DAF40065B26E /* xxtea.cpp */; };
+		644FAC742196DAF40065B26E /* xxtea.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644FAC712196DAF40065B26E /* xxtea.cpp */; };
+		644FAC752196DAF40065B26E /* xxtea.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644FAC712196DAF40065B26E /* xxtea.cpp */; };
+		644FAC762196DAF40065B26E /* xxtea.h in Headers */ = {isa = PBXBuildFile; fileRef = 644FAC722196DAF40065B26E /* xxtea.h */; };
+		644FAC772196DAF40065B26E /* xxtea.h in Headers */ = {isa = PBXBuildFile; fileRef = 644FAC722196DAF40065B26E /* xxtea.h */; };
+		644FAC782196DAF40065B26E /* xxtea.h in Headers */ = {isa = PBXBuildFile; fileRef = 644FAC722196DAF40065B26E /* xxtea.h */; };
 		826294331AAF001C00CB7CF7 /* HttpAsynConnection-apple.m in Sources */ = {isa = PBXBuildFile; fileRef = 52B47A2A1A5349A3004E4C60 /* HttpAsynConnection-apple.m */; };
 		826294341AAF003E00CB7CF7 /* HttpClient-apple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 52B47A2B1A5349A3004E4C60 /* HttpClient-apple.mm */; };
 		826294351AAF004C00CB7CF7 /* HttpCookie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52B47A2C1A5349A3004E4C60 /* HttpCookie.cpp */; };
@@ -5592,6 +5598,8 @@
 		5E9F61231A3FFE3D0038DE01 /* CCFrustum.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCFrustum.h; sourceTree = "<group>"; };
 		5E9F61241A3FFE3D0038DE01 /* CCPlane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CCPlane.cpp; sourceTree = "<group>"; };
 		5E9F61251A3FFE3D0038DE01 /* CCPlane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCPlane.h; sourceTree = "<group>"; };
+		644FAC712196DAF40065B26E /* xxtea.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xxtea.cpp; sourceTree = "<group>"; };
+		644FAC722196DAF40065B26E /* xxtea.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xxtea.h; sourceTree = "<group>"; };
 		8525E3A11B291E42008EE815 /* clipper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = clipper.hpp; sourceTree = "<group>"; };
 		85B374381B204B9400C488D6 /* clipper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = clipper.cpp; sourceTree = "<group>"; };
 		94A6DF031C7303FD0094AEF7 /* LocalizationManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizationManager.cpp; sourceTree = "<group>"; };
@@ -6751,6 +6759,7 @@
 		1A57033E180BD0490088DEC7 /* external */ = {
 			isa = PBXGroup;
 			children = (
+				644FAC702196DAF40065B26E /* xxtea */,
 				1A40D0D91E8E4C76002E363A /* md5 */,
 				68B39B391B1C5C670084F72C /* clipper */,
 				B6DD2F731B04820C00E47F5F /* recast */,
@@ -8456,6 +8465,16 @@
 			path = TextReader;
 			sourceTree = "<group>";
 		};
+		644FAC702196DAF40065B26E /* xxtea */ = {
+			isa = PBXGroup;
+			children = (
+				644FAC712196DAF40065B26E /* xxtea.cpp */,
+				644FAC722196DAF40065B26E /* xxtea.h */,
+			);
+			name = xxtea;
+			path = ../external/xxtea;
+			sourceTree = "<group>";
+		};
 		68B39B391B1C5C670084F72C /* clipper */ = {
 			isa = PBXGroup;
 			children = (
@@ -9579,6 +9598,7 @@
 				5030C0421CE6DF8B00C5D3E7 /* CCVRGenericHeadTracker.h in Headers */,
 				15AE184C19AAD30800C27E9E /* SimpleAudioEngine.h in Headers */,
 				50ABBDA11925AB4100A911A9 /* CCGroupCommand.h in Headers */,
+				644FAC762196DAF40065B26E /* xxtea.h in Headers */,
 				50864C911C7BC1B000B3BAB1 /* chipmunk_private.h in Headers */,
 				B665E24C1AA80A6500DDB1C5 /* CCPUColorAffector.h in Headers */,
 				29394CF019B01DBA00D2DE1A /* UIWebView.h in Headers */,
@@ -10392,6 +10412,7 @@
 				507B3F911C31BDD30067B53E /* HttpConnection-winrt.h in Headers */,
 				507B3F921C31BDD30067B53E /* CCTMXXMLParser.h in Headers */,
 				507B3F931C31BDD30067B53E /* CCPURender.h in Headers */,
+				644FAC782196DAF40065B26E /* xxtea.h in Headers */,
 				507B3F941C31BDD30067B53E /* CCPUPlaneColliderTranslator.h in Headers */,
 				5020A2031D49912500E80C72 /* SkeletonRenderer.h in Headers */,
 				507B3F961C31BDD30067B53E /* UIScale9Sprite.h in Headers */,
@@ -11205,6 +11226,7 @@
 				1A5702FD180BCE750088DEC7 /* CCTMXXMLParser.h in Headers */,
 				B665E3B11AA80A6500DDB1C5 /* CCPURender.h in Headers */,
 				B665E3951AA80A6500DDB1C5 /* CCPUPlaneColliderTranslator.h in Headers */,
+				644FAC772196DAF40065B26E /* xxtea.h in Headers */,
 				15AE1B8D19AADA9A00C27E9E /* UIScale9Sprite.h in Headers */,
 				15AE18AC19AAD33D00C27E9E /* CCBAnimationManager.h in Headers */,
 				292DB14219B4574100A80320 /* UIEditBoxImpl.h in Headers */,
@@ -12160,6 +12182,7 @@
 				50ABBECF1925AB6F00A911A9 /* TGAlib.cpp in Sources */,
 				15AE199E19AAD39600C27E9E /* SliderReader.cpp in Sources */,
 				50ABBE451925AB6F00A911A9 /* CCEvent.cpp in Sources */,
+				644FAC732196DAF40065B26E /* xxtea.cpp in Sources */,
 				291A09251C5F06A60068C1D2 /* CCUIEditBoxMac.mm in Sources */,
 				D0FD034F1A3B51AA00825BB5 /* CCAllocatorGlobal.cpp in Sources */,
 				50ABBE611925AB6F00A911A9 /* CCEventListenerAcceleration.cpp in Sources */,
@@ -12290,6 +12313,7 @@
 				507B39E01C31BDD30067B53E /* UIEditBoxImpl-mac.mm in Sources */,
 				507B39E31C31BDD30067B53E /* CCPURandomiser.cpp in Sources */,
 				507B39E41C31BDD30067B53E /* CCControlUtils.cpp in Sources */,
+				644FAC752196DAF40065B26E /* xxtea.cpp in Sources */,
 				507B39E51C31BDD30067B53E /* CCPUObserver.cpp in Sources */,
 				507B39E71C31BDD30067B53E /* CCTrianglesCommand.cpp in Sources */,
 				507B39EA1C31BDD30067B53E /* UIWidget.cpp in Sources */,
@@ -12960,6 +12984,7 @@
 				B230ED7219B417AE00364AA8 /* CCTrianglesCommand.cpp in Sources */,
 				15AE1B9019AADA9A00C27E9E /* UIWidget.cpp in Sources */,
 				ED9C6A9518599AD8000A5232 /* CCNodeGrid.cpp in Sources */,
+				644FAC742196DAF40065B26E /* xxtea.cpp in Sources */,
 				B665E2531AA80A6500DDB1C5 /* CCPUDoAffectorEventHandler.cpp in Sources */,
 				B665E3F71AA80A6600DDB1C5 /* CCPUSlaveEmitterTranslator.cpp in Sources */,
 				1A01C68F18F57BE800EFE3A6 /* CCDictionary.cpp in Sources */,
