@@ -39,6 +39,7 @@ THE SOFTWARE.
 // for import ssize_t on win32 platform
 #include "platform/CCStdC.h"
 #endif
+#include "unzip.h"
 
 /**
  * @addtogroup base
@@ -47,9 +48,9 @@ THE SOFTWARE.
 
 namespace cocos2d
 {
-#ifndef _unz64_H
-typedef struct unz_file_info_s unz_file_info;
-#endif
+//#ifndef _unz64_H
+//typedef struct unz_file_info_s unz_file_info;
+//#endif
     /** XXX: pragma pack ???
      * @struct CCZHeader
      */
@@ -220,7 +221,7 @@ typedef struct unz_file_info_s unz_file_info;
 
     // forward declaration
     class ZipFilePrivate;
-    struct unz_file_info_s;
+//    struct unz_file_info_s;
 
     /**
     * Zip file - reader helper class.
@@ -288,13 +289,13 @@ typedef struct unz_file_info_s unz_file_info;
         std::string getFirstFilename();
         std::string getNextFilename();
         
-        static ZipFile *createWithBuffer(const void* buffer, unsigned long size);
+//        static ZipFile *createWithBuffer(const void* buffer, unsigned long size);
         
     private:
         /* Only used internal for createWithBuffer() */
         ZipFile();
         
-        bool initWithBuffer(const void *buffer, unsigned long size);
+//        bool initWithBuffer(const void *buffer, unsigned long size);
         int getCurrentFileInfo(std::string *filename, unz_file_info *info);
         
         /** Internal data like zip file pointer / file list array and so on */

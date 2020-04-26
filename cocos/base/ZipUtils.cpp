@@ -28,6 +28,7 @@
 #include <minizip/unzip.h>
 #else // from our embedded sources
 #include "unzip.h"
+#include "ioapi_mem.h"
 #endif
 
 #include "base/ZipUtils.h"
@@ -42,10 +43,10 @@
 #include <map>
 
 // FIXME: Other platforms should use upstream minizip like mingw-w64  
-#ifdef MINIZIP_FROM_SYSTEM
+//#ifdef MINIZIP_FROM_SYSTEM
 #define unzGoToFirstFile64(A,B,C,D) unzGoToFirstFile2(A,B,C,D, NULL, 0, NULL, 0)
 #define unzGoToNextFile64(A,B,C,D) unzGoToNextFile2(A,B,C,D, NULL, 0, NULL, 0)
-#endif
+//#endif
 
 NS_CC_BEGIN
 
@@ -516,16 +517,16 @@ public:
     FileListContainer fileList;
 };
 
-ZipFile *ZipFile::createWithBuffer(const void* buffer, uLong size)
-{
-    ZipFile *zip = new (std::nothrow) ZipFile();
-    if (zip && zip->initWithBuffer(buffer, size)) {
-        return zip;
-    } else {
-        if (zip) delete zip;
-        return nullptr;
-    }
-}
+//ZipFile *ZipFile::createWithBuffer(const void* buffer, uLong size)
+//{
+//    ZipFile *zip = new (std::nothrow) ZipFile();
+//    if (zip && zip->initWithBuffer(buffer, size)) {
+//        return zip;
+//    } else {
+//        if (zip) delete zip;
+//        return nullptr;
+//    }
+//}
 
 ZipFile::ZipFile()
 : _data(new ZipFilePrivate)
@@ -704,15 +705,21 @@ int ZipFile::getCurrentFileInfo(std::string *filename, unz_file_info *info)
     return ret;
 }
 
-bool ZipFile::initWithBuffer(const void *buffer, uLong size)
-{
-    if (!buffer || size == 0) return false;
-    
-    _data->zipFile = unzOpenBuffer(buffer, size);
-    if (!_data->zipFile) return false;
-    
-    setFilter(emptyFilename);
-    return true;
-}
+//bool ZipFile::initWithBuffer(const void *buffer, uLong size)
+//{
+//    if (!buffer || size == 0) return false;
+//
+//    zlib_filefunc_def zdf;
+//    ourmemory_t mem;
+//    mem.base = (char*)buffer;
+//    mem.size = (unsigned int)size;
+//    fill_memory_filefunc(&zdf, &mem);
+//
+//    _data->zipFile = unzOpen2("", &zdf);
+//    if (!_data->zipFile) return false;
+//
+//    setFilter(emptyFilename);
+//    return true;
+//}
 
 NS_CC_END
