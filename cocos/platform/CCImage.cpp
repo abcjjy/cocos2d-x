@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2017 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -89,6 +90,7 @@ extern "C"
     
 #if CC_USE_JPEG
 #include "jpeglib.h"
+#include <setjmp.h>
 #endif // CC_USE_JPEG
 }
 #include "base/s3tc.h"
@@ -1143,9 +1145,18 @@ bool Image::initWithPngData(const unsigned char * data, ssize_t dataLen)
         png_read_end(png_ptr, nullptr);
 
         // premultiplied alpha for RGBA8888
-        if (PNG_PREMULTIPLIED_ALPHA_ENABLED && color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+        if (color_type == PNG_COLOR_TYPE_RGB_ALPHA)
         {
-            premultipliedAlpha();
+            if (PNG_PREMULTIPLIED_ALPHA_ENABLED)
+            {
+                premultiplyAlpha();
+            }
+            else
+            {
+#if CC_ENABLE_PREMULTIPLIED_ALPHA != 0
+                _hasPremultipliedAlpha = true;
+#endif
+            }
         }
 
         if (row_pointers != nullptr)
@@ -2414,7 +2425,7 @@ bool Image::saveImageToJPG(const std::string& filePath)
             while (cinfo.next_scanline < cinfo.image_height)
             {
                 row_pointer[0] = & tempData[cinfo.next_scanline * row_stride];
-                (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
+                (void)jpeg_write_scanlines(&cinfo, row_pointer, 1);
             }
 
             if (tempData != nullptr)
@@ -2426,7 +2437,7 @@ bool Image::saveImageToJPG(const std::string& filePath)
         {
             while (cinfo.next_scanline < cinfo.image_height) {
                 row_pointer[0] = & _data[cinfo.next_scanline * row_stride];
-                (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
+                (void)jpeg_write_scanlines(&cinfo, row_pointer, 1);
             }
         }
 
@@ -2443,7 +2454,7 @@ bool Image::saveImageToJPG(const std::string& filePath)
 #endif // CC_USE_JPEG
 }
 
-void Image::premultipliedAlpha()
+void Image::premultiplyAlpha()
 {
 #if CC_ENABLE_PREMULTIPLIED_ALPHA == 0
         _hasPremultipliedAlpha = false;
@@ -2462,6 +2473,29 @@ void Image::premultipliedAlpha()
 #endif
 }
 
+static inline unsigned char clamp(int x) {
+    return (unsigned char)(x >= 0 ? (x < 255 ? x : 255) : 0);
+}
+
+void Image::reversePremultipliedAlpha()
+{
+    CCASSERT(_renderFormat == Texture2D::PixelFormat::RGBA8888, "The pixel format should be RGBA8888!");
+
+    unsigned int* fourBytes = (unsigned int*)_data;
+    for (int i = 0; i < _width * _height; i++)
+    {
+        unsigned char* p = _data + i * 4;
+        if (p[3] > 0)
+        {
+            fourBytes[i] = clamp(int(std::ceil((p[0] * 255.0f) / p[3]))) |
+                clamp(int(std::ceil((p[1] * 255.0f) / p[3]))) << 8 |
+                clamp(int(std::ceil((p[2] * 255.0f) / p[3]))) << 16 |
+                p[3] << 24;
+        }
+    }
+
+    _hasPremultipliedAlpha = false;
+}
 
 void Image::setPVRImagesHavePremultipliedAlpha(bool haveAlphaPremultiplied)
 {

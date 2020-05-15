@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2014-2017 Chukong Technologies Inc.
+ Copyright (c) 2014-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -290,7 +291,7 @@ public:
      * @param filePath The file path of an audio.
      * @param callback A callback which will be called after loading is finished.
      */
-    static void preload(const std::string& filePath, std::function<void(bool isSuccess)> callback);
+    static void preload(const std::string& filePath, const std::function<void(bool isSuccess)>& callback);
 
     /**
      * Gets playing audio count.

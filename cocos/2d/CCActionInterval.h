@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2011      Zynga Inc.
 Copyright (c) 2010-2012 cocos2d-x.org
-Copyright (c) 2013-2017 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -252,12 +253,12 @@ public:
     virtual Repeat* clone() const override;
     virtual Repeat* reverse() const override;
     virtual void startWithTarget(Node *target) override;
-    virtual void stop(void) override;
+    virtual void stop() override;
     /**
      * @param dt In seconds.
      */
     virtual void update(float dt) override;
-    virtual bool isDone(void) const override;
+    virtual bool isDone() const override;
     
 CC_CONSTRUCTOR_ACCESS:
     Repeat() {}
@@ -320,13 +321,13 @@ public:
     // Overrides
     //
     virtual RepeatForever* clone() const override;
-    virtual RepeatForever* reverse(void) const override;
+    virtual RepeatForever* reverse() const override;
     virtual void startWithTarget(Node* target) override;
     /**
      * @param dt In seconds.
      */
     virtual void step(float dt) override;
-    virtual bool isDone(void) const override;
+    virtual bool isDone() const override;
     
 CC_CONSTRUCTOR_ACCESS:
     RepeatForever()
@@ -1649,7 +1650,7 @@ public:
      *
      * @return An autoreleased ActionFloat object
      */
-    static ActionFloat* create(float duration, float from, float to, ActionFloatCallback callback);
+    static ActionFloat* create(float duration, float from, float to, const ActionFloatCallback& callback);
 
     /**
      * Overridden ActionInterval methods
@@ -1663,7 +1664,7 @@ CC_CONSTRUCTOR_ACCESS:
     ActionFloat() {};
     virtual ~ActionFloat() {};
 
-    bool initWithDuration(float duration, float from, float to, ActionFloatCallback callback);
+    bool initWithDuration(float duration, float from, float to, const ActionFloatCallback& callback);
 
 protected:
     /* From value */

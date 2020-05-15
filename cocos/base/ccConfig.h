@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2017 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -256,6 +257,18 @@ THE SOFTWARE.
 #define CC_USE_PHYSICS 1
 #endif
 
+#if (CC_USE_PHYSICS)
+/** Use chipmunk physics 2d engine. */
+#ifndef CC_ENABLE_CHIPMUNK_INTEGRATION
+#define CC_ENABLE_CHIPMUNK_INTEGRATION 1
+#endif
+
+/** or use box2d physics 2d engine. */
+#ifndef CC_ENABLE_BOX2D_INTEGRATION
+#define CC_ENABLE_BOX2D_INTEGRATION 0
+#endif
+#endif // CC_USE_PHYSICS
+
 /** Use 3d physics integration API. */
 #ifndef CC_USE_3D_PHYSICS
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC || CC_TARGET_PLATFORM == CC_PLATFORM_WIN32 || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID || CC_TARGET_PLATFORM == CC_PLATFORM_LINUX /*|| CC_TARGET_PLATFORM == CC_PLATFORM_WINRT*/)
@@ -403,5 +416,7 @@ THE SOFTWARE.
 #ifndef CC_STRIP_FPS
 #define CC_STRIP_FPS 0
 #endif
+
+#define CC_LABEL_MAX_LENGTH ((1<<16)/4)
 
 #endif // __CCCONFIG_H__

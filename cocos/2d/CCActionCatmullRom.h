@@ -2,7 +2,8 @@
  * Copyright (c) 2008 Radu Gruian
  * Copyright (c) 2011 Vit Valentin
  * Copyright (c) 2012 cocos2d-x.org
- * Copyright (c) 2013-2017 Chukong Technologies Inc.
+ * Copyright (c) 2013-2016 Chukong Technologies Inc.
+ * Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  *
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,7 +41,7 @@
 #include "2d/CCActionInterval.h"
 #include "math/CCGeometry.h"
 
-NS_CC_BEGIN;
+NS_CC_BEGIN
 
 class Node;
 
@@ -342,6 +343,6 @@ extern CC_DLL Vec2 ccCardinalSplineAt(const Vec2 &p0, const Vec2 &p1, const Vec2
 // end of actions group
 /// @}
 
-NS_CC_END;
+NS_CC_END
 
 #endif // __CCACTION_CATMULLROM_H__

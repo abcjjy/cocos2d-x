@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2013      Zynga Inc.
- Copyright (c) 2013-2017 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
 
@@ -70,8 +71,12 @@ FontAtlas::FontAtlas(Font &theFont)
         {
             _letterPadding += 2 * FontFreeType::DistanceMapSpread;    
         }
-        
-        reinit();
+
+        auto outlineSize = _fontFreeType->getOutlineSize();
+        if (outlineSize > 0)
+        {
+            _lineHeight += 2 * outlineSize;
+        }
 
 #if CC_ENABLE_CACHE_TEXTURE_DATA
         auto eventDispatcher = Director::getInstance()->getEventDispatcher();
@@ -97,7 +102,6 @@ void FontAtlas::reinit()
     auto outlineSize = _fontFreeType->getOutlineSize();
     if(outlineSize > 0)
     {
-        _lineHeight += 2 * outlineSize;
         _currentPageDataSize *= 2;
     }
     
@@ -342,7 +346,10 @@ bool FontAtlas::prepareLetterDefinitions(const std::u32string& utf32Text)
     {
         return false;
     } 
-    
+ 
+    if (!_currentPageData)
+        reinit();     
+ 
     std::unordered_map<unsigned int, unsigned int> codeMapOfNewChar;
     findNewCharacters(utf32Text, codeMapOfNewChar);
     if (codeMapOfNewChar.empty())
@@ -429,10 +436,10 @@ bool FontAtlas::prepareLetterDefinitions(const std::u32string& utf32Text)
             tempDef.height = tempDef.height / scaleFactor;
             tempDef.U = tempDef.U / scaleFactor;
             tempDef.V = tempDef.V / scaleFactor;
+            tempDef.rotated = false;
         }
         else{
-            if(bitmap)
-                delete[] bitmap;
+            delete[] bitmap;
             if (tempDef.xAdvance)
                 tempDef.validDefinition = true;
             else
@@ -445,6 +452,7 @@ bool FontAtlas::prepareLetterDefinitions(const std::u32string& utf32Text)
             tempDef.offsetX = 0;
             tempDef.offsetY = 0;
             tempDef.textureID = 0;
+            tempDef.rotated = false;
             _currentPageOrigX += 1;
         }
 
@@ -476,9 +484,20 @@ Texture2D* FontAtlas::getTexture(int slot)
     return _atlasTextures[slot];
 }
 
-void  FontAtlas::setLineHeight(float newHeight)
+void FontAtlas::setLineHeight(float newHeight)
 {
     _lineHeight = newHeight;
+}
+
+std::string FontAtlas::getFontName() const
+{
+    std::string fontName = _fontFreeType ? _fontFreeType->getFontName() : "";
+    if(fontName.empty()) return fontName;
+    auto idx = fontName.rfind('/');
+    if (idx != std::string::npos) { return fontName.substr(idx + 1); }
+    idx = fontName.rfind('\\');
+    if (idx != std::string::npos) { return fontName.substr(idx + 1); }
+    return fontName;
 }
 
 void FontAtlas::setAliasTexParameters()

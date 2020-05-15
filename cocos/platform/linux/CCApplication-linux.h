@@ -1,6 +1,7 @@
 /****************************************************************************
 Copyright (c) 2011      Laschweinski
-Copyright (c) 2013-2017 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -54,7 +55,6 @@ public:
      @param interval    The time, which expressed in second in second, between current frame and next.
      */
     virtual void setAnimationInterval(float interval) override;
-    virtual void setAnimationInterval(float interval, SetIntervalReason reason) override;
 
     /**
      @brief Run the message loop.
@@ -102,7 +102,7 @@ public:
      *  Gets the Resource root path.
      *  @deprecated Please use FileUtils::getInstance()->getSearchPaths() instead. 
      */
-    CC_DEPRECATED_ATTRIBUTE const std::string& getResourceRootPath(void);
+    CC_DEPRECATED_ATTRIBUTE const std::string& getResourceRootPath();
     
     /**
      @brief Get target platform

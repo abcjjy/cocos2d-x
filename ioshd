@@ -828,7 +828,6 @@ external/curl/include/ios/curl/easy.h
 external/curl/include/ios/curl/mprintf.h
 external/curl/include/ios/curl/multi.h
 external/curl/include/ios/curl/stdcheaders.h
-external/curl/include/ios/curl/system.h
 external/curl/include/ios/curl/typecheck-gcc.h
 external/minizip/crypt.h
 external/minizip/ioapi.h
@@ -884,4 +883,5 @@ external/json/schema.h
 external/json/stream.h
 external/json/stringbuffer.h
 external/json/writer.h
+external/xxtea/xxtea.h
 

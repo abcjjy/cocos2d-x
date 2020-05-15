@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2013      Zynga Inc.
- Copyright (c) 2013-2017 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -156,6 +157,11 @@ public:
         _letterVisible = visible;
         updateColor();
     }
+
+    bool isVisible() const override
+    {
+        return _letterVisible;
+    }
     
     //LabelLetter doesn't need to draw directly.
     void draw(Renderer* /*renderer*/, const Mat4 & /*transform*/, uint32_t /*flags*/) override
@@ -237,11 +243,11 @@ Label* Label::createWithTTF(const TTFConfig& ttfConfig, const std::string& text,
     return nullptr;
 }
 
-Label* Label::createWithBMFont(const std::string& bmfontFilePath, const std::string& text,const TextHAlignment& hAlignment /* = TextHAlignment::LEFT */, int maxLineWidth /* = 0 */, const Vec2& imageOffset /* = Vec2::ZERO */)
+Label* Label::createWithBMFont(const std::string& bmfontPath, const std::string& text, const TextHAlignment& hAlignment, int maxLineWidth)
 {
     auto ret = new (std::nothrow) Label(hAlignment);
 
-    if (ret && ret->setBMFontFilePath(bmfontFilePath,imageOffset))
+    if (ret && ret->setBMFontFilePath(bmfontPath))
     {
         ret->setMaxLineWidth(maxLineWidth);
         ret->setString(text);
@@ -249,9 +255,48 @@ Label* Label::createWithBMFont(const std::string& bmfontFilePath, const std::str
 
         return ret;
     }
-    
+
     delete ret;
     return nullptr;
+}
+
+Label* Label::createWithBMFont(const std::string& bmfontPath, const std::string& text, const TextHAlignment& hAlignment, int maxLineWidth, const Rect& imageRect, bool imageRotated)
+{
+    auto ret = new (std::nothrow) Label(hAlignment);
+
+    if (ret && ret->setBMFontFilePath(bmfontPath, imageRect, imageRotated))
+    {
+        ret->setMaxLineWidth(maxLineWidth);
+        ret->setString(text);
+        ret->autorelease();
+
+        return ret;
+    }
+
+    delete ret;
+    return nullptr;
+}
+
+Label* Label::createWithBMFont(const std::string& bmfontPath, const std::string& text, const TextHAlignment& hAlignment, int maxLineWidth, const std::string& subTextureKey)
+{
+    auto ret = new (std::nothrow) Label(hAlignment);
+
+    if (ret && ret->setBMFontFilePath(bmfontPath, subTextureKey))
+    {
+        ret->setMaxLineWidth(maxLineWidth);
+        ret->setString(text);
+        ret->autorelease();
+
+        return ret;
+    }
+
+    delete ret;
+    return nullptr;
+}
+
+Label* Label::createWithBMFont(const std::string& bmfontPath, const std::string& text, const TextHAlignment& hAlignment, int maxLineWidth, const Vec2& imageOffset)
+{
+    return createWithBMFont(bmfontPath, text, hAlignment, maxLineWidth, Rect(imageOffset.x, imageOffset.y, 0, 0), false);
 }
 
 Label* Label::createWithCharMap(const std::string& plistFile)
@@ -475,10 +520,15 @@ void Label::reset()
     TTFConfig temp;
     _fontConfig = temp;
     _outlineSize = 0.f;
+
     _bmFontPath = "";
+    _bmSubTextureKey = "";
+    _bmRect = Rect::ZERO;
+    _bmRotated = false;
+
     _systemFontDirty = false;
     _systemFont = "Helvetica";
-    _systemFontSize = 12;
+    _systemFontSize = CC_DEFAULT_FONT_LABEL_SIZE;
 
     if (_horizontalKernings)
     {
@@ -628,9 +678,40 @@ bool Label::setTTFConfig(const TTFConfig& ttfConfig)
     return setTTFConfigInternal(ttfConfig);
 }
 
-bool Label::setBMFontFilePath(const std::string& bmfontFilePath, const Vec2& imageOffset, float fontSize)
+bool Label::setBMFontFilePath(const std::string& bmfontFilePath, float fontSize)
 {
-    FontAtlas *newAtlas = FontAtlasCache::getFontAtlasFNT(bmfontFilePath,imageOffset);
+    FontAtlas* newAtlas = FontAtlasCache::getFontAtlasFNT(bmfontFilePath);
+
+    if (!newAtlas)
+    {
+        reset();
+        return false;
+    }
+
+    //assign the default fontSize
+    if (std::abs(fontSize) < FLT_EPSILON) {
+        FontFNT* bmFont = (FontFNT*)newAtlas->getFont();
+        if (bmFont) {
+            float originalFontSize = bmFont->getOriginalFontSize();
+            _bmFontSize = originalFontSize / CC_CONTENT_SCALE_FACTOR();
+        }
+    }
+
+    if (fontSize > 0.0f) {
+        _bmFontSize = fontSize;
+    }
+
+    _bmFontPath = bmfontFilePath;
+
+    _currentLabelType = LabelType::BMFONT;
+    setFontAtlas(newAtlas);
+
+    return true;
+}
+
+bool Label::setBMFontFilePath(const std::string& bmfontFilePath, const Rect& imageRect, bool imageRotated, float fontSize)
+{
+    FontAtlas *newAtlas = FontAtlasCache::getFontAtlasFNT(bmfontFilePath, imageRect, imageRotated);
     
     if (!newAtlas)
     {
@@ -652,6 +733,8 @@ bool Label::setBMFontFilePath(const std::string& bmfontFilePath, const Vec2& ima
     }
 
     _bmFontPath = bmfontFilePath;
+    _bmRect = imageRect;
+    _bmRotated = imageRotated;
 
     _currentLabelType = LabelType::BMFONT;
     setFontAtlas(newAtlas);
@@ -659,9 +742,46 @@ bool Label::setBMFontFilePath(const std::string& bmfontFilePath, const Vec2& ima
     return true;
 }
 
+bool Label::setBMFontFilePath(const std::string& bmfontFilePath, const std::string& subTextureKey, float fontSize)
+{
+    FontAtlas* newAtlas = FontAtlasCache::getFontAtlasFNT(bmfontFilePath, subTextureKey);
+
+    if (!newAtlas)
+    {
+        reset();
+        return false;
+    }
+
+    //assign the default fontSize
+    if (std::abs(fontSize) < FLT_EPSILON) {
+        FontFNT* bmFont = (FontFNT*)newAtlas->getFont();
+        if (bmFont) {
+            float originalFontSize = bmFont->getOriginalFontSize();
+            _bmFontSize = originalFontSize / CC_CONTENT_SCALE_FACTOR();
+        }
+    }
+
+    if (fontSize > 0.0f) {
+        _bmFontSize = fontSize;
+    }
+
+    _bmFontPath = bmfontFilePath;
+    _bmSubTextureKey = subTextureKey;
+
+    _currentLabelType = LabelType::BMFONT;
+    setFontAtlas(newAtlas);
+
+    return true;
+}
+
+bool Label::setBMFontFilePath(const std::string& bmfontFilePath, const Vec2& imageOffset, float fontSize)
+{
+    return setBMFontFilePath(bmfontFilePath, Rect(imageOffset.x, imageOffset.y, 0, 0), false);
+}
+
 void Label::setString(const std::string& text)
 {
-    if (text.compare(_utf8Text))
+    if (text != _utf8Text)
     {
         _utf8Text = text;
         _contentDirty = true;
@@ -670,6 +790,13 @@ void Label::setString(const std::string& text)
         if (StringUtils::UTF8ToUTF32(_utf8Text, utf32String))
         {
             _utf32Text  = utf32String;
+        }
+
+        CCASSERT(_utf32Text.length() <= CC_LABEL_MAX_LENGTH, "Length of text should be less then 16384");
+        if (_utf32Text.length() > CC_LABEL_MAX_LENGTH)
+        {
+            cocos2d::log("Error: Label text is too long %d > %d and it will be truncated!", _utf32Text.length(), CC_LABEL_MAX_LENGTH);
+            _utf32Text = _utf32Text.substr(0, CC_LABEL_MAX_LENGTH);
         }
     }
 }
@@ -760,30 +887,36 @@ void Label::updateLabelLetters()
             else
             {
                 auto& letterInfo = _lettersInfo[letterIndex];
-                auto& letterDef = _fontAtlas->_letterDefinitions[letterInfo.utf32Char];
-                uvRect.size.height = letterDef.height;
-                uvRect.size.width = letterDef.width;
-                uvRect.origin.x = letterDef.U;
-                uvRect.origin.y = letterDef.V;
-
-                auto batchNode = _batchNodes.at(letterDef.textureID);
-                letterSprite->setTextureAtlas(batchNode->getTextureAtlas());
-                letterSprite->setTexture(_fontAtlas->getTexture(letterDef.textureID));
-                if (letterDef.width <= 0.f || letterDef.height <= 0.f)
+                if (letterInfo.valid)
                 {
-                    letterSprite->setTextureAtlas(nullptr);
+                    auto& letterDef = _fontAtlas->_letterDefinitions[letterInfo.utf32Char];
+                    uvRect.size.height = letterDef.height;
+                    uvRect.size.width = letterDef.width;
+                    uvRect.origin.x = letterDef.U;
+                    uvRect.origin.y = letterDef.V;
+
+                    auto batchNode = _batchNodes.at(letterDef.textureID);
+                    letterSprite->setTextureAtlas(batchNode->getTextureAtlas());
+                    letterSprite->setTexture(_fontAtlas->getTexture(letterDef.textureID));
+                    if (letterDef.width <= 0.f || letterDef.height <= 0.f)
+                    {
+                        letterSprite->setTextureAtlas(nullptr);
+                    }
+                    else
+                    {
+                        letterSprite->setTextureRect(uvRect, letterDef.rotated, uvRect.size);
+                        letterSprite->setTextureAtlas(_batchNodes.at(letterDef.textureID)->getTextureAtlas());
+                        letterSprite->setAtlasIndex(_lettersInfo[letterIndex].atlasIndex);
+                    }
+
+                    auto px = letterInfo.positionX + letterDef.width / 2 + _linesOffsetX[letterInfo.lineIndex];
+                    auto py = letterInfo.positionY - letterDef.height / 2 + _letterOffsetY;
+                    letterSprite->setPosition(px, py);
                 }
                 else
                 {
-                    letterSprite->setTextureRect(uvRect, false, uvRect.size);
-                    letterSprite->setTextureAtlas(_batchNodes.at(letterDef.textureID)->getTextureAtlas());
-                    letterSprite->setAtlasIndex(_lettersInfo[letterIndex].atlasIndex);
+                    letterSprite->setTextureAtlas(nullptr);
                 }
-
-                auto px = letterInfo.positionX + letterDef.width / 2 + _linesOffsetX[letterInfo.lineIndex];
-                auto py = letterInfo.positionY - letterDef.height / 2 + _letterOffsetY;
-                letterSprite->setPosition(px, py);
-
                 this->updateLetterSpriteScale(letterSprite);
                 ++it;
             }
@@ -952,7 +1085,7 @@ bool Label::updateQuads()
 
             if (_reusedRect.size.height > 0.f && _reusedRect.size.width > 0.f)
             {
-                _reusedLetter->setTextureRect(_reusedRect, false, _reusedRect.size);
+                _reusedLetter->setTextureRect(_reusedRect, letterDef.rotated, _reusedRect.size);
                 float letterPositionX = _lettersInfo[ctr].positionX + _linesOffsetX[_lettersInfo[ctr].lineIndex];
                 _reusedLetter->setPosition(letterPositionX, py);
                 auto index = static_cast<int>(_batchNodes.at(letterDef.textureID)->getTextureAtlas()->getTotalQuads());
@@ -1012,8 +1145,16 @@ bool Label::setTTFConfigInternal(const TTFConfig& ttfConfig)
 
 void Label::setBMFontSizeInternal(float fontSize)
 {
-    if(_currentLabelType == LabelType::BMFONT){
-        this->setBMFontFilePath(_bmFontPath, Vec2::ZERO, fontSize);
+    if(_currentLabelType == LabelType::BMFONT)
+    {
+        if (!_bmSubTextureKey.empty())
+        {
+            this->setBMFontFilePath(_bmFontPath, _bmSubTextureKey, fontSize);
+        }
+        else
+        {
+            this->setBMFontFilePath(_bmFontPath, _bmRect, _bmRotated, fontSize);
+        }
         _contentDirty = true;
     }
 }
@@ -1780,7 +1921,7 @@ Sprite* Label::getLetter(int letterIndex)
                 else
                 {
                     this->updateBMFontScale();
-                    letter = LabelLetter::createWithTexture(_fontAtlas->getTexture(textureID), uvRect);
+                    letter = LabelLetter::createWithTexture(_fontAtlas->getTexture(textureID), uvRect, letterDef.rotated);
                     letter->setTextureAtlas(_batchNodes.at(textureID)->getTextureAtlas());
                     letter->setAtlasIndex(letterInfo.atlasIndex);
                     auto px = letterInfo.positionX + _bmfontScale * uvRect.size.width / 2 + _linesOffsetX[letterInfo.lineIndex];
@@ -1866,7 +2007,7 @@ void Label::computeStringNumLines()
     size_t stringLen = _utf32Text.length();
     for (size_t i = 0; i < stringLen - 1; ++i)
     {
-        if (_utf32Text[i] == (char32_t)TextFormatter::NewLine)
+        if (_utf32Text[i] == StringUtils::UnicodeCharacters::NewLine)
         {
             quantityOfLines++;
         }
@@ -2072,10 +2213,15 @@ void Label::removeChild(Node* child, bool cleanup /* = true */)
 FontDefinition Label::_getFontDefinition() const
 {
     FontDefinition systemFontDef;
-    systemFontDef._fontName = _systemFont;
+
+    std::string fontName = _systemFont;
+    if (_fontAtlas && !_fontAtlas->getFontName().empty()) fontName = _fontAtlas->getFontName();
+
+    systemFontDef._fontName = fontName;
     systemFontDef._fontSize = _systemFontSize;
     systemFontDef._alignment = _hAlignment;
     systemFontDef._vertAlignment = _vAlignment;
+    systemFontDef._lineSpacing = _lineSpacing;
     systemFontDef._dimensions.width = _labelWidth;
     systemFontDef._dimensions.height = _labelHeight;
     systemFontDef._fontFillColor.r = _textColor.r;

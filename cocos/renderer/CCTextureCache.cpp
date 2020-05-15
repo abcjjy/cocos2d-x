@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2017 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -403,7 +404,7 @@ Texture2D * TextureCache::addImage(const std::string &path)
     // Needed since addImageAsync calls this method from a different thread
 
     std::string fullpath = FileUtils::getInstance()->fullPathForFilename(path);
-    if (fullpath.size() == 0)
+    if (fullpath.empty())
     {
         return nullptr;
     }
@@ -526,7 +527,7 @@ bool TextureCache::reloadTexture(const std::string& fileName)
     Image * image = nullptr;
 
     std::string fullpath = FileUtils::getInstance()->fullPathForFilename(fileName);
-    if (fullpath.size() == 0)
+    if (fullpath.empty())
     {
         return false;
     }

@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2017 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -1037,7 +1038,7 @@ void ParticleSystem::update(float dt)
     CC_PROFILER_STOP_CATEGORY(kProfilerCategoryParticles , "CCParticleSystem - update");
 }
 
-void ParticleSystem::updateWithNoTime(void)
+void ParticleSystem::updateWithNoTime()
 {
     this->update(0.0f);
 }
@@ -1326,7 +1327,7 @@ void ParticleSystem::setAutoRemoveOnFinish(bool var)
 
 // ParticleSystem - methods for batchNode rendering
 
-ParticleBatchNode* ParticleSystem::getBatchNode(void) const
+ParticleBatchNode* ParticleSystem::getBatchNode() const
 {
     return _batchNode;
 }

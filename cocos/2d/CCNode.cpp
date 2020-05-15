@@ -3,7 +3,8 @@ Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2009      Valentin Milea
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2017 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -74,6 +75,7 @@ Node::Node()
 , _normalizedPositionDirty(false)
 , _skewX(0.0f)
 , _skewY(0.0f)
+, _anchorPoint(0, 0)
 , _contentSize(Size::ZERO)
 , _contentSizeDirty(true)
 , _transformDirty(true)
@@ -110,14 +112,13 @@ Node::Node()
 , _cascadeColorEnabled(false)
 , _cascadeOpacityEnabled(false)
 , _cameraMask(1)
-#if CC_USE_PHYSICS
-, _physicsBody(nullptr)
-#endif
-, _anchorPoint(0, 0)
 , _onEnterCallback(nullptr)
 , _onExitCallback(nullptr)
 , _onEnterTransitionDidFinishCallback(nullptr)
 , _onExitTransitionDidStartCallback(nullptr)
+#if CC_USE_PHYSICS
+, _physicsBody(nullptr)
+#endif
 {
     // set default scheduler and actionManager
     _director = Director::getInstance();
@@ -217,7 +218,15 @@ void Node::cleanup()
     // timers
     this->unscheduleAllCallbacks();
 
-    _eventDispatcher->removeEventListenersForTarget(this);
+    // NOTE: Although it was correct that removing event listeners associated with current node in Node::cleanup.
+    // But it broke the compatibility to the versions before v3.16 .
+    // User code may call `node->removeFromParent(true)` which will trigger node's cleanup method, when the node 
+    // is added to scene again, event listeners like EventListenerTouchOneByOne will be lost. 
+    // In fact, user's code should use `node->removeFromParent(false)` in order not to do a cleanup and just remove node
+    // from its parent. For more discussion about why we revert this change is at https://github.com/cocos2d/cocos2d-x/issues/18104.
+    // We need to consider more before we want to correct the old and wrong logic code.
+    // For now, compatiblity is the most important for our users.
+//    _eventDispatcher->removeEventListenersForTarget(this);
     
     for( const auto &child: _children)
         child->cleanup();
@@ -411,7 +420,7 @@ void Node::setRotationSkewY(float rotationY)
 }
 
 /// scale getter
-float Node::getScale(void) const
+float Node::getScale() const
 {
     CCASSERT( _scaleX == _scaleY, "CCNode#scale. ScaleX != ScaleY. Don't know which one to return");
     return _scaleX;
@@ -803,13 +812,13 @@ Node* Node::getChildByName(const std::string& name) const
     for (const auto& child : _children)
     {
         // Different strings may have the same hash code, but can use it to compare first for speed
-        if(child->_hashOfName == hash && child->_name.compare(name) == 0)
+        if(child->_hashOfName == hash && child->_name == name)
             return child;
     }
     return nullptr;
 }
 
-void Node::enumerateChildren(const std::string &name, std::function<bool (Node *)> callback) const
+void Node::enumerateChildren(const std::string &name, const std::function<bool (Node *)>& callback) const
 {
     CCASSERT(!name.empty(), "Invalid name");
     CCASSERT(callback != nullptr, "Invalid callback function");
@@ -841,26 +850,31 @@ void Node::enumerateChildren(const std::string &name, std::function<bool (Node *
     
     // Remove '//', '/..' if exist
     std::string newName = name.substr(subStrStartPos, subStrlength);
-
+    
+    const Node* target = this;
+    
     if (searchFromParent)
     {
-        newName.insert(0, "[[:alnum:]]+/");
+        if (nullptr == _parent)
+        {
+            return;
+        }
+        target = _parent;
     }
-    
     
     if (searchRecursively)
     {
         // name is '//xxx'
-        doEnumerateRecursive(this, newName, callback);
+        target->doEnumerateRecursive(target, newName, callback);
     }
     else
     {
         // name is xxx
-        doEnumerate(newName, callback);
+        target->doEnumerate(newName, callback);
     }
 }
 
-bool Node::doEnumerateRecursive(const Node* node, const std::string &name, std::function<bool (Node *)> callback) const
+bool Node::doEnumerateRecursive(const Node* node, const std::string &name, const std::function<bool (Node *)>& callback) const
 {
     bool ret =false;
     
@@ -885,7 +899,7 @@ bool Node::doEnumerateRecursive(const Node* node, const std::string &name, std::
     return ret;
 }
 
-bool Node::doEnumerate(std::string name, std::function<bool (Node *)> callback) const
+bool Node::doEnumerate(std::string name, const std::function<bool (Node *)>& callback) const
 {
     // name may be xxx/yyy, should find its parent
     size_t pos = name.find('/');
@@ -1180,7 +1194,7 @@ void Node::sortAllChildren()
 void Node::draw()
 {
     auto renderer = _director->getRenderer();
-    draw(renderer, _modelViewTransform, true);
+    draw(renderer, _modelViewTransform, FLAGS_TRANSFORM_DIRTY);
 }
 
 void Node::draw(Renderer* /*renderer*/, const Mat4 & /*transform*/, uint32_t /*flags*/)
@@ -1191,7 +1205,7 @@ void Node::visit()
 {
     auto renderer = _director->getRenderer();
     auto& parentTransform = _director->getMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
-    visit(renderer, parentTransform, true);
+    visit(renderer, parentTransform, FLAGS_TRANSFORM_DIRTY);
 }
 
 uint32_t Node::processParentFlags(const Mat4& parentTransform, uint32_t parentFlags)
@@ -1983,7 +1997,7 @@ void Node::removeAllComponents()
 
 // MARK: Opacity and Color
 
-GLubyte Node::getOpacity(void) const
+GLubyte Node::getOpacity() const
 {
     return _realOpacity;
 }
@@ -2014,7 +2028,7 @@ void Node::updateDisplayedOpacity(GLubyte parentOpacity)
     }
 }
 
-bool Node::isCascadeOpacityEnabled(void) const
+bool Node::isCascadeOpacityEnabled() const
 {
     return _cascadeOpacityEnabled;
 }
@@ -2068,7 +2082,7 @@ bool Node::isOpacityModifyRGB() const
     return false;
 }
 
-const Color3B& Node::getColor(void) const
+const Color3B& Node::getColor() const
 {
     return _realColor;
 }
@@ -2101,7 +2115,7 @@ void Node::updateDisplayedColor(const Color3B& parentColor)
     }
 }
 
-bool Node::isCascadeColorEnabled(void) const
+bool Node::isCascadeColorEnabled() const
 {
     return _cascadeColorEnabled;
 }

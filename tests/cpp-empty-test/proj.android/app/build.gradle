@@ -1,10 +1,9 @@
-import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.internal.os.OperatingSystem
 
 apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion PROP_COMPILE_SDK_VERSION.toInteger()
-    buildToolsVersion '27.0.1'
 
     defaultConfig {
         applicationId "org.cocos2dx.cpp_empty_test"
@@ -14,16 +13,37 @@ android {
         versionName "1.0"
 
         externalNativeBuild {
-            ndkBuild {
-                if (!project.hasProperty("PROP_NDK_MODE") || PROP_NDK_MODE.compareTo('none') != 0) {
-                    // skip the NDK Build step if PROP_NDK_MODE is none
+            if (PROP_BUILD_TYPE == 'ndk-build') {
+                ndkBuild {
                     targets 'cpp_empty_test'
                     arguments 'NDK_TOOLCHAIN_VERSION=clang'
-                    arguments 'APP_PLATFORM=android-' + PROP_APP_PLATFORM
                     arguments '-j' + Runtime.runtime.availableProcessors()
-                    abiFilters.addAll(PROP_APP_ABI.split(':').collect { it as String })
+
+                    def module_paths = [project.file("../../../..").absolutePath,
+                                        project.file("../../../../cocos").absolutePath,
+                                        project.file("../../../../external").absolutePath]
+                    if (OperatingSystem.current().isWindows()) {
+                        module_paths = module_paths.collect {it.replaceAll('\\\\', '/')}
+                        arguments 'NDK_MODULE_PATH=' + module_paths.join(";")
+                    }
+                    else {
+                        arguments 'NDK_MODULE_PATH=' + module_paths.join(':')
+                    }
                 }
             }
+            else if (PROP_BUILD_TYPE == 'cmake') {
+                cmake {
+                    targets "cpp_empty_test"
+                    arguments "-DCMAKE_FIND_ROOT_PATH=", "-DANDROID_STL=c++_static", "-DANDROID_TOOLCHAIN=clang",
+                            "-DANDROID_ARM_NEON=TRUE"
+                    cppFlags "-frtti -fexceptions -fsigned-char"
+                }
+            }
+        }
+
+        ndk {
+            abiFilters = []
+            abiFilters.addAll(PROP_APP_ABI.split(':').collect{it as String})
         }
     }
 
@@ -31,20 +51,25 @@ android {
         java.srcDir "src"
         res.srcDir "res"
         manifest.srcFile "AndroidManifest.xml"
+        assets.srcDir "assets"
     }
 
     externalNativeBuild {
-        ndkBuild {
-            if (!project.hasProperty("PROP_NDK_MODE") || PROP_NDK_MODE.compareTo('none') != 0) {
-                // skip the NDK Build step if PROP_NDK_MODE is none
+        if (PROP_BUILD_TYPE == 'ndk-build') {
+            ndkBuild {
                 path "jni/Android.mk"
+            }
+        }
+        else if (PROP_BUILD_TYPE == 'cmake') {
+            cmake {
+                path "../../CMakeLists.txt"
             }
         }
     }
 
     signingConfigs {
 
-        release {
+       release {
             if (project.hasProperty("RELEASE_STORE_FILE")) {
                 storeFile file(RELEASE_STORE_FILE)
                 storePassword RELEASE_STORE_PASSWORD
@@ -87,16 +112,19 @@ android {
 }
 
 android.applicationVariants.all { variant ->
-    // delete previous files first
-    delete "${buildDir}/intermediates/assets/${variant.dirName}"
 
-    variant.mergeAssets.doLast {
+    delete "${projectDir}/assets"
+    
+    def targetName = variant.name.capitalize()
+    def copyTaskName = "copy${targetName}ResourcesToAssets"
+    tasks.register(copyTaskName) {
         copy {
-            from "${buildDir}/../../../Resources"
-            into "${buildDir}/intermediates/assets/${variant.dirName}"
+            from "${projectDir}/../../Resources"
+            into "${projectDir}/assets"
             exclude "**/*.gz"
         }
     }
+    tasks.getByName("pre${targetName}Build").dependsOn copyTaskName
 }
 
 dependencies {

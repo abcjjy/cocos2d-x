@@ -21,8 +21,10 @@
 -dontwarn org.cocos2dx.**
 -keep public class com.chukong.** { *; }
 -dontwarn com.chukong.**
--keep public com.huawei.android.** { *; }
+-keep public class com.huawei.android.** { *; }
 -dontwarn com.huawei.android.**
+-keep public class com.oppo.oiface.engine.** { *; }
+-dontwarn com.oppo.oiface.engine.**
 
 # Proguard Apache HTTP for release
 -keep class org.apache.http.** { *; }

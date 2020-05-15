@@ -3,7 +3,8 @@ Copyright 2011 Jeff Lamarche
 Copyright 2012 Goffredo Marocchi
 Copyright 2012 Ricardo Quesada
 Copyright 2012 cocos2d-x.org
-Copyright (c) 2013-2017 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
 http://www.cocos2d-x.org
 
@@ -486,8 +487,11 @@ bool GLProgram::compileShader(GLuint * shader, GLenum type, const GLchar* source
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WINRT
         headersDef = (type == GL_VERTEX_SHADER ? "precision mediump float;\n precision mediump int;\n" : "precision mediump float;\n precision mediump int;\n");
 // Bugfix to make shader variables types constant to be understood by the current Android Virtual Devices or Emulators. This will also eliminate the 0x501 and 0x502 OpenGL Errors during emulation.
+// Changed shader data types mediump to highp to remove possible sprite joggling on some Android phones.
 #elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-        headersDef = "#version 100\n precision mediump float;\n precision mediump int;\n";
+        headersDef = (type == GL_VERTEX_SHADER ?
+            "#version 100\n precision highp float;\n precision highp int;\n" :
+            "#version 100\n precision highp float;\n precision highp int;\n");
 #elif (CC_TARGET_PLATFORM != CC_PLATFORM_WIN32 && CC_TARGET_PLATFORM != CC_PLATFORM_LINUX && CC_TARGET_PLATFORM != CC_PLATFORM_MAC)
         headersDef = (type == GL_VERTEX_SHADER ? "precision highp float;\n precision highp int;\n" : "precision mediump float;\n precision mediump int;\n");
 #endif

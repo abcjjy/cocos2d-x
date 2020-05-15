@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2015-2017 Chukong Technologies Inc.
+ Copyright (c) 2015-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -258,7 +259,7 @@ public:
      */
     State getState() const { return _state; }
 
-    bool isKeepLocal(void) const { return _keepLocal; }
+    bool isKeepLocal() const { return _keepLocal; }
     void setKeepLocal(bool keepLocal);
 
      /** 
@@ -269,7 +270,7 @@ public:
     /**
      * is enabled
      */
-    bool isEnabled(void) const { return _isEnabled; }
+    bool isEnabled() const { return _isEnabled; }
 
 CC_CONSTRUCTOR_ACCESS:
     ParticleSystem3D();

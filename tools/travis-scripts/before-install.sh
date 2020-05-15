@@ -6,64 +6,24 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 COCOS2DX_ROOT="$DIR"/../..
 HOST_NAME=""
+CURL="curl --retry 999 --retry-max-time 0"
 
 function install_android_ndk()
 {
-    mkdir -p $HOME/bin
-    cd $HOME/bin
-
-    # Download android ndk
-    if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-        HOST_NAME="darwin"
+    sudo python -m pip install retry
+    if [ "$BUILD_TARGET" == "android_cpp_ndk-build" ]\
+        || [ "$BUILD_TARGET" == "android_lua_ndk-build" ]\
+        || [ "$BUILD_TARGET" == "android_cpp_cmake" ]\
+        || [ "$BUILD_TARGET" == "android_js_cmake" ]\
+        || [ "$BUILD_TARGET" == "android_lua_cmake" ] ; then
+        python $COCOS2DX_ROOT/tools/appveyor-scripts/setup_android.py
     else
-        HOST_NAME="linux"
+        python $COCOS2DX_ROOT/tools/appveyor-scripts/setup_android.py --ndk_only
     fi
-
-    FILE_NAME=android-ndk-r16-${HOST_NAME}-x86_64.zip
-
-    # the NDK is used to generate binding codes, should use r16 when fix binding codes with r16
-    echo "Download ${FILE_NAME} ..."
-    curl -O https://dl.google.com/android/repository/${FILE_NAME}
-    echo "Decompress ${FILE_NAME} ..."
-    unzip ./${FILE_NAME} > /dev/null
-
-    # Rename ndk
-    mv android-ndk-r16 android-ndk
 }
 
 function install_linux_environment()
 {
-    mkdir -p $HOME/bin
-    pushd $HOME/bin
-
-    echo "GCC version: `gcc --version`"
-    # install new version cmake
-    CMAKE_VERSION="3.7.2"
-    CMAKE_DOWNLOAD_URL="https://cmake.org/files/v3.7/cmake-${CMAKE_VERSION}.tar.gz"
-    echo "Download ${CMAKE_DOWNLOAD_URL}"
-    curl -O ${CMAKE_DOWNLOAD_URL}
-    tar -zxf "cmake-${CMAKE_VERSION}.tar.gz"
-    cd "cmake-${CMAKE_VERSION}"
-    ./configure > /dev/null
-    make -j2 > /dev/null
-    sudo make install > /dev/null
-    echo "CMake Version: `cmake --version`"
-    cd ..
-
-    # install new version binutils
-    BINUTILS_VERSION="2.27"
-    BINUTILS_URL="http://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz"
-    echo "Download ${BINUTILS_URL}"
-    curl -O ${BINUTILS_URL}
-    tar -zxf "binutils-${BINUTILS_VERSION}.tar.gz"
-    cd "binutils-${BINUTILS_VERSION}"
-    ./configure > /dev/null
-    make -j2 > /dev/null
-    sudo make install > /dev/null
-    echo "ld Version: `ld --version`"
-    echo "which ld: `which ld`"
-    sudo rm /usr/bin/ld
-    popd
     echo "Installing linux dependence packages ..."
     echo -e "y" | bash $COCOS2DX_ROOT/build/install-deps-linux.sh
     echo "Installing linux dependence packages finished!"
@@ -78,19 +38,19 @@ function download_deps()
     echo "Downloading cocos2d-x dependence finished!"
 }
 
-function install_android_environment()
-{
-    # todo: cocos should add parameter to avoid promt
-    sudo mkdir $HOME/.cocos
-    sudo touch $HOME/.cocos/local_cfg.json
-    echo '{"agreement_shown": true}' | sudo tee $HOME/.cocos/local_cfg.json
-}
-
 function install_python_module_for_osx()
 {
-    sudo easy_install pip
-    sudo -H pip install PyYAML
-    sudo -H pip install Cheetah
+    pip install PyYAML
+    sudo pip install Cheetah
+}
+
+function install_latest_python()
+{
+    python -V
+    eval "$(pyenv init -)"
+    pyenv install 2.7.14
+    pyenv global 2.7.14
+    python -V
 }
 
 # set up environment according os and target
@@ -99,16 +59,19 @@ function install_environement_for_pull_request()
     echo "Building pull request ..."
 
     if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+        sudo apt-get update
+        sudo apt-get install ninja-build
+        ninja --version
         if [ "$BUILD_TARGET" == "linux" ]; then
             install_linux_environment
         fi
-
-        if [ "$BUILD_TARGET" == "android" ]; then
-            install_android_environment
+        if [ "$BUILD_TARGET" == "linux_clang_tidy" ]; then
+            install_linux_environment
         fi
     fi
 
     if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+        install_latest_python
         install_python_module_for_osx
     fi
 
@@ -120,14 +83,34 @@ function install_environement_for_pull_request()
 # should generate binding codes & cocos_files.json after merging
 function install_environement_for_after_merge()
 {
+    if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+        install_latest_python
+        install_python_module_for_osx
+    fi
+
     echo "Building merge commit ..."
     install_android_ndk
     download_deps
-
-    if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-        install_python_module_for_osx
-    fi
 }
+
+if [ "$BUILD_TARGET" == "android_cocos_new_cpp_test" ]; then
+    sudo apt-get update
+    sudo apt-get install ninja-build
+    ninja --version
+    download_deps
+    sudo python -m pip install retry
+    python $COCOS2DX_ROOT/tools/appveyor-scripts/setup_android.py
+    exit 0
+fi
+
+if [ "$BUILD_TARGET" == "linux_cocos_new_lua_test" ]; then
+    download_deps
+    install_linux_environment
+    sudo python -m pip install retry
+    # set android ndk environment by setup_android.py
+    python $COCOS2DX_ROOT/tools/appveyor-scripts/setup_android.py --ndk_only
+    exit 0
+fi
 
 # build pull request
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then

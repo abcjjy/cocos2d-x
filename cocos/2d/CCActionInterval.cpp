@@ -2,7 +2,8 @@
 Copyright (c) 2008-2010 Ricardo Quesada
 Copyright (c) 2010-2012 cocos2d-x.org
 Copyright (c) 2011      Zynga Inc.
-Copyright (c) 2013-2017 Chukong Technologies Inc.
+Copyright (c) 2013-2016 Chukong Technologies Inc.
+Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
 http://www.cocos2d-x.org
 
@@ -28,6 +29,8 @@ THE SOFTWARE.
 #include "2d/CCActionInterval.h"
 
 #include <stdarg.h>
+
+#include <utility>
 
 #include "2d/CCSprite.h"
 #include "2d/CCNode.h"
@@ -87,8 +90,8 @@ void ExtraAction::step(float /*dt*/)
 
 bool ActionInterval::initWithDuration(float d)
 {
-    _duration = d;
 
+    _duration = std::abs(d) <= MATH_EPSILON ? MATH_EPSILON : d;
     _elapsed = 0;
     _firstTick = true;
     _done = false;
@@ -118,7 +121,7 @@ void ActionInterval::step(float dt)
     if (_firstTick)
     {
         _firstTick = false;
-        _elapsed = 0;
+        _elapsed = MATH_EPSILON;
     }
     else
     {
@@ -331,7 +334,7 @@ void Sequence::startWithTarget(Node *target)
         return;
     }
     if (_duration > FLT_EPSILON)
-        // fix #14936 - FLT_EPSILON (instant action) / very fast duration (0.001) leads to worng split, that leads to call instant action few times
+        // fix #14936 - FLT_EPSILON (instant action) / very fast duration (0.001) leads to wrong split, that leads to call instant action few times
         _split = _actions[0]->getDuration() > FLT_EPSILON ? _actions[0]->getDuration() / _duration : 0;
     
     ActionInterval::startWithTarget(target);
@@ -445,9 +448,7 @@ Repeat* Repeat::create(FiniteTimeAction *action, unsigned int times)
 
 bool Repeat::initWithAction(FiniteTimeAction *action, unsigned int times)
 {
-    float d = action->getDuration() * times;
-
-    if (action && ActionInterval::initWithDuration(d))
+    if (action && ActionInterval::initWithDuration(action->getDuration() * times))
     {
         _times = times;
         _innerAction = action;
@@ -482,7 +483,7 @@ Repeat::~Repeat()
 void Repeat::startWithTarget(Node *target)
 {
     _total = 0;
-    _nextDt = _innerAction->getDuration()/_duration;
+    _nextDt = _innerAction->getDuration() / _duration;
     ActionInterval::startWithTarget(target);
     _innerAction->startWithTarget(target);
 }
@@ -2426,7 +2427,6 @@ DelayTime* DelayTime::clone() const
 
 void DelayTime::update(float /*time*/)
 {
-    return;
 }
 
 DelayTime* DelayTime::reverse() const
@@ -2802,7 +2802,7 @@ void TargetedAction::setForcedTarget(Node* forcedTarget)
 
 // ActionFloat
 
-ActionFloat* ActionFloat::create(float duration, float from, float to, ActionFloatCallback callback)
+ActionFloat* ActionFloat::create(float duration, float from, float to, const ActionFloatCallback& callback)
 {
     auto ref = new (std::nothrow) ActionFloat();
     if (ref && ref->initWithDuration(duration, from, to, callback))
@@ -2815,7 +2815,7 @@ ActionFloat* ActionFloat::create(float duration, float from, float to, ActionFlo
     return nullptr;
 }
 
-bool ActionFloat::initWithDuration(float duration, float from, float to, ActionFloatCallback callback)
+bool ActionFloat::initWithDuration(float duration, float from, float to, const ActionFloatCallback& callback)
 {
     if (ActionInterval::initWithDuration(duration))
     {

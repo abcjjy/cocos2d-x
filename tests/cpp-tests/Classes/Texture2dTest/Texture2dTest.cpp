@@ -1,6 +1,7 @@
 /****************************************************************************
  Copyright (c) 2012 cocos2d-x.org
- Copyright (c) 2013-2017 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -108,7 +109,7 @@ Texture2DTests::Texture2DTests()
     ADD_TEST_CASE(TextureConvertRGBA8888);
     ADD_TEST_CASE(TextureConvertI8);
     ADD_TEST_CASE(TextureConvertAI88);
-};
+}
 
 //------------------------------------------------------------------
 //
@@ -1942,7 +1943,7 @@ void TextureMemoryAlloc::updateImage(cocos2d::Ref *sender)
             break;
 	}
 
-    _background = Sprite::create(file.c_str());
+    _background = Sprite::create(file);
     addChild(_background, -10);
 	
     _background->setVisible(false);

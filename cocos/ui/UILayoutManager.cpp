@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2013-2017 Chukong Technologies Inc.
+ Copyright (c) 2013-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
  
  http://www.cocos2d-x.org
  
@@ -182,7 +183,7 @@ Widget* RelativeLayoutManager::getRelativeWidget(Widget* widget)
 {
     Widget* relativeWidget = nullptr;
     RelativeLayoutParameter* layoutParameter = dynamic_cast<RelativeLayoutParameter*>(widget->getLayoutParameter());
-    const std::string relativeName = layoutParameter->getRelativeToWidgetName();
+    const std::string& relativeName = layoutParameter->getRelativeToWidgetName();
     
     if (!relativeName.empty())
     {

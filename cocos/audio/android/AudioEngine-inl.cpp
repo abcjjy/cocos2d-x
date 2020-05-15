@@ -1,5 +1,6 @@
 /****************************************************************************
- Copyright (c) 2014-2017 Chukong Technologies Inc.
+ Copyright (c) 2014-2016 Chukong Technologies Inc.
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
 
  http://www.cocos2d-x.org
 
@@ -96,7 +97,8 @@ static int fdGetter(const std::string& url, off_t* start, off_t* length)
     {
         fd = getObbAssetFileDescriptorJNI(url.c_str(), start, length);
     } 
-    else
+    
+    if (fd <= 0)
     {
         auto asset = AAssetManager_open(cocos2d::FileUtilsAndroid::getAssetManager(), url.c_str(), AASSET_MODE_UNKNOWN);
         // open asset as file descriptor
