@@ -15,4 +15,4 @@ if [ "$1" == "android" ] || [ "$1" == "all" ]; then
     rsync -av --delete bin-android/ $MY_LIB_PATH/libcocos2dx-android
 fi
 
-say -v alex "cocos2d-x install finish"
+echo '\a'
